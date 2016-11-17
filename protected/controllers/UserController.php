@@ -58,8 +58,7 @@ class UserController{
         }
     }
     
-    public function subscribeAction()
-    {
+    public function subscribeAction(){
         $data = [
             'id_course' => strip_tags(trim($_POST['id_course'])),
             'id_u' => strip_tags(trim($_POST['id_u']))
@@ -81,8 +80,7 @@ class UserController{
         }
     }
 
-    public function unsubscribeAction()
-    {
+    public function unsubscribeAction(){
         $data = [
             'id_course' => strip_tags(trim($_POST['id_course'])),
             'id_u' => strip_tags(trim($_POST['id_u']))
@@ -98,6 +96,46 @@ class UserController{
             HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
         } catch (EntityNotFoundException $e) {
             HTTPResponseBuilder::getInstance()->sendFailRespond(404, "User not found", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+    public function getSubscribedUsersListAction(){
+        $data = [
+            'id_course' => strip_tags(trim($_POST['id_course'])),
+            'start_date' => strip_tags(trim($_POST['start_date'])),
+            'end_date' => strip_tags(trim($_POST['end_date']))
+        ];
+        foreach ($data as $key=>$value) {
+            if (empty($value)){
+                HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: `$key`");
+            }
+        }
+        try{
+            $subscribedUsersList = $this->userService->getSubscribedUsersListByPeriod($data);
+            FrontController::getInstance()->setBody(json_encode($subscribedUsersList));
+        }catch (EntityNotFoundException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
+        } catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+    public function getBestStudentListAction(){
+        $id_course = strip_tags(trim($_POST['id_course']));
+        if (empty($id_course)){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: id_course");
+        }
+        try{
+            $bestStudentsList = $this->userService->getBestStudentsList($id_course);
+            FrontController::getInstance()->setBody(json_encode($bestStudentsList));
+        }catch (EntityNotFoundException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
+        } catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
         } catch (StatementExecutionException $e) {
             HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
         }

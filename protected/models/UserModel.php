@@ -91,6 +91,36 @@ class UserModel extends Model{
         return !empty($subscription);
     }
 
+    public function getSubscribedUsersListByPeriod(array $data){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT * FROM users 
+                WHERE id_u IN(
+                SELECT id_u FROM subscriptions WHERE id_course = :id_course AND (date BETWEEN :start_date AND :end_date)
+                )";
+        $stmt = $link->prepare($sql);
+        $stmt->execute($data);
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $subscribedUsersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $subscribedUsersList;
+    }
+
+    public function getBestStudentsListByCourseId($id_course){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT * FROM users
+                INNER JOIN (SELECT DISTINCT id_user, AVG(result) AS medium_mark
+                FROM results 
+                GROUP BY id_user
+                HAVING id_course = :id_course
+                ORDER BY medium_mark DESC
+                LIMIT 10) ON users.id_u = id_user";
+        $stmt = $link->prepare($sql);
+        $stmt->bindParam(1, $id_course, PDO::PARAM_INT);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $bestStudentsList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $bestStudentsList;
+    }
+
     public function deleteUser($id_user)
     {
         $link = PDOConnection::getInstance()->getConnection();

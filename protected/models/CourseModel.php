@@ -134,6 +134,8 @@ class CourseModel extends Model{
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesList;
     }
 
     /**

@@ -67,7 +67,7 @@ class CourseService{
             return $coursesList;
         }
         else
-            throw new EntityNotFoundException("None of courses in date range was not found.");
+            throw new EntityNotFoundException("Courses in specified period were not found.");
     }
 
     public function getUserSubscriptionsList($id_user){
