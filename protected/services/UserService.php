@@ -24,8 +24,7 @@ class UserService{
         }
         $this->userModel->addUser($data);
             mail($data['email'], "Course Management System",
-                "Congratulations, " . $data['name'] . "! You've been successfully registered in Course Management System.
-                 Have a nice day :)");
+                "Congratulations, " . $data['name'] . "!\nYou've been successfully registered in Course Management System.\nWith best regards, CMS Team.");
     }
 
     public function authUser(array $data){

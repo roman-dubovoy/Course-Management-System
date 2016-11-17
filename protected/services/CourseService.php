@@ -51,6 +51,7 @@ class CourseService{
         else
             throw new EntityNotFoundException("Courses list by email: {$email_lecturer} was not found.");
     }
+
     public function getAllCoursesList(){
         $allCoursesList = $this->courseModel->getAllCoursesList();
         if (!empty($allCoursesList)){
@@ -59,6 +60,16 @@ class CourseService{
         else
             throw new EntityNotFoundException("No courses in DB.");
     }
+
+    public function getCoursesListByPeriod(array $data){
+        $coursesList = $this->courseModel->getCoursesListByPeriod($data);
+        if (!empty($coursesList)){
+            return $coursesList;
+        }
+        else
+            throw new EntityNotFoundException("None of courses in date range was not found.");
+    }
+
     public function getUserSubscriptionsList($id_user){
         $userSubscriptionList = $this->courseModel->getCoursesListByUserSubscription($id_user);
         if (!empty($userSubscriptionList)){

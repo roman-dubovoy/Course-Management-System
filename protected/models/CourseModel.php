@@ -21,7 +21,7 @@ class CourseModel extends Model{
      */
     public function addCourse(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "INSERT INTO courses(title, description, date, id_auth) VALUES(:title, :description, :date, :id_auth)";
+        $sql = "INSERT INTO courses(title, description, date, id_auth, id_category) VALUES(:title, :description, :date, :id_auth, :id_category)";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
@@ -86,7 +86,7 @@ class CourseModel extends Model{
      */
     public function getCoursesListByLecturerEmail($email_lecturer){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT id_course, title, description FROM courses WHERE id_auth = (SELECT id_u FROM users WHERE email = ?)";
+        $sql = "SELECT id_course, title, description, id_category FROM courses WHERE id_auth = (SELECT id_u FROM users WHERE email = ?)";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $email_lecturer, PDO::PARAM_STR);
         $stmt->execute();
@@ -128,6 +128,14 @@ class CourseModel extends Model{
         return $allCoursesList;
     }
 
+    public function getCoursesListByPeriod(array $data){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT * FROM courses WHERE date BETWEEN :start_date AND :end_date";
+        $stmt = $link->prepare($sql);
+        $stmt->execute($data);
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+    }
+
     /**
      * Deletes course from DB by it id.
      * @param $title
@@ -149,9 +157,9 @@ class CourseModel extends Model{
      */
     public function updateCourse(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "UPDATE courses SET title = :title, description = :description WHERE id_course = :id_course";
+        $sql = "UPDATE courses SET title = :title, description = :description, id_category = :id_category WHERE id_course = :id_course";
         $stmt = $link->prepare($sql);
-        $stmt->execute(array(':title' => $data['title'], 'description' => $data['description'], 'id_course' => $data['id_course']));
+        $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
     }
 }

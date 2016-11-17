@@ -57,7 +57,7 @@ class UserController{
             HTTPResponseBuilder::getInstance()->sendFailRespond(401, "User unauthorized", $e->getMessage());
         }
     }
-
+    
     public function subscribeAction()
     {
         $data = [

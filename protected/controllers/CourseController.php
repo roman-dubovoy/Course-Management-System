@@ -12,7 +12,8 @@ class CourseController{
             'title' => strip_tags(trim($_POST['title'])),
             'description' => strip_tags(trim($_POST['description'])),
             'date' => time(),
-            'id_auth' => strip_tags(trim($_POST['id_auth']))
+            'id_auth' => strip_tags(trim($_POST['id_auth'])),
+            'id_category' => strip_tags(trim($_POST['id_category']))
         ];
         foreach ($data as $key => $value){
             if (empty($value)){
@@ -60,7 +61,7 @@ class CourseController{
     public function getCoursesListAction(){
         $email_lecturer = strip_tags(trim($_POST['email']));
         if (empty($email_lecturer)){
-            HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: 'email_lecturer'");
+            HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: email_lecturer");
         }
         try{
             $coursesList = $this->courseService->getCoursesList($email_lecturer);
@@ -82,6 +83,31 @@ class CourseController{
             FrontController::getInstance()->setBody(json_encode($allCoursesList));
         }catch (EntityNotFoundException $e){
             HTTPResponseBuilder::getInstance()->sendFailRespond(404, 'Not found', $e->getMessage());
+        }
+        catch (StatementExecutionException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+        catch (PDOException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+    public function getCoursesListByPeriodAction(){
+        $data = [
+            "start_date" => strip_tags(trim($_POST['start_date'])),
+            "end_date" => strip_tags(trim($_POST['end_date']))
+        ];
+        foreach ($data as $key=>$value){
+            if (empty($value)){
+                HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: `$key`");
+            }
+        }
+        try{
+            $coursesList = $this->courseService->getCoursesListByPeriod($data);
+            FrontController::getInstance()->setBody(json_encode($coursesList));
+        }
+        catch (EntityNotFoundException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
         }
         catch (StatementExecutionException $e){
             HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
@@ -131,9 +157,10 @@ class CourseController{
     
     public function updateCourseAction(){
         $data = [
-            'id_course' => strip_tags(trim($_POST['id_course'])),
             'title' => strip_tags(trim($_POST['title'])),
-            'description' => strip_tags(trim($_POST['description']))
+            'description' => strip_tags(trim($_POST['description'])),
+            'id_category' => strip_tags(trim($_POST['id_category'])),
+            'id_course' => strip_tags(trim($_POST['id_course']))
         ];
         foreach ($data as $key => $value){
             if (empty($value)){

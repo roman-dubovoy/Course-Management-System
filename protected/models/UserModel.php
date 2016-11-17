@@ -1,7 +1,5 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT']."/assets/settings.php";
-require $_SERVER['DOCUMENT_ROOT'] . "/protected/models/Model.php";
-require $_SERVER['DOCUMENT_ROOT'] . "/protected/library/PDOConnection.php";
 
 class UserModel extends Model{
     private static $instance = null;
