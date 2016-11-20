@@ -21,6 +21,16 @@ class CourseService{
         }
         $this->courseModel->addCourse($data);
     }
+    
+    public function getCoursesCategoriesList(){
+        $coursesCategories = $this->courseModel->getCoursesCategoriesList();
+        if (!empty($coursesCategories)){
+            return $coursesCategories;
+        }
+        else
+            throw new EntityNotFoundException("Fatal error. Courses categories were not found.");
+    }
+    
     public function getCourse(array $data)
     {
         if ($this->userModel->getUserById($data['id_u'])) {
@@ -79,6 +89,28 @@ class CourseService{
             throw new EntityNotFoundException("Courses which user with id: {$id_user} subscribed on was not found.");
     }
 
+    public function getCoursesListForTeacher($id_user){
+        if ($this->userModel->getUserById($id_user)){
+            $coursesListForTeacher = $this->courseModel->getCoursesListForTeacher($id_user);
+            if (!empty($coursesListForTeacher)){
+                return $coursesListForTeacher;
+            }
+            else
+                throw new EntityNotFoundException("Courses which were not created by user with id: $id_user were not found.");
+        }
+        else
+            throw new EntityNotFoundException("User with id: $id_user was not found.");
+    }
+    
+    public function getCoursesAmountForLastWeek(){
+        $amount = $this->courseModel->getCoursesAmountForLastWeek();
+        if (!empty($amount)){
+            return (int)$amount;
+        }
+        else
+            throw new EmptyEntityException("No courses created for the last week.");
+    }
+
     public function deleteCourse($course_title){
         if ($this->courseModel->isCourseWithTitleExists($course_title)) {
             $this->courseModel->deleteCourse($course_title);
@@ -97,15 +129,6 @@ class CourseService{
         }
         else{
             throw new EntityNotFoundException("Course with id: " . $data['id_course'] ." does not exist.");
-        }
-    }
-
-    public function checkCourseExistence($id_course){
-        if ($this->courseModel->isCourseCreated($id_course)) {
-            return true;
-        }
-        else{
-            throw new EntityNotFoundException("Course with id: {$id_course} does not exists.");
         }
     }
 }

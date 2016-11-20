@@ -93,10 +93,15 @@ class UserModel extends Model{
 
     public function getSubscribedUsersListByPeriod(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT * FROM users 
-                WHERE id_u IN(
-                SELECT id_u FROM subscriptions WHERE id_course = :id_course AND (date BETWEEN :start_date AND :end_date)
-                )";
+        $sql = "SELECT users.id_u, name, email, role, subscriptions.date AS subscription_date, title AS course_title
+                FROM users 
+                INNER JOIN subscriptions
+                INNER JOIN courses
+                ON users.id_u = subscriptions.id_u
+                AND subscriptions.id_course = courses.id_course
+                WHERE users.id_u IN(SELECT id_u
+                                    FROM subscriptions
+                                    WHERE date BETWEEN :start_date AND :end_date)";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
@@ -104,15 +109,19 @@ class UserModel extends Model{
         return $subscribedUsersList;
     }
 
-    public function getBestStudentsListByCourseId($id_course){
+    public function getBestStudentsList(){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT * FROM users
+        $sql = "SELECT users.id_u, name, email, medium_mark, title AS course_title FROM users
                 INNER JOIN (SELECT DISTINCT id_user, AVG(result) AS medium_mark
-                FROM results 
-                GROUP BY id_user
-                HAVING id_course = :id_course
-                ORDER BY medium_mark DESC
-                LIMIT 10) ON users.id_u = id_user";
+                            FROM results 
+                            GROUP BY id_user
+                            ORDER BY medium_mark DESC
+                            LIMIT 10) user_result  
+                INNER JOIN subscriptions
+                INNER JOIN courses
+                ON users.id_u = user_result.id_user 
+                AND users.id_u = subscriptions.id_u
+                AND subscriptions.id_course = courses.id_course";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $id_course, PDO::PARAM_INT);
         $stmt->execute();

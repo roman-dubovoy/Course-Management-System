@@ -92,6 +92,7 @@ class TestService{
         $totalMark = 0;
         foreach ($data['answers'] as $answer_id) {
             $answer = $this->answerService->getAnswerById($answer_id)[0];
+            var_dump($answer);
             if (!empty($answer['is_correct'])) {
                 $totalMark += (float)$this->questionService->getQuestionById($answer['id_question'])['points'];
             }
@@ -106,9 +107,10 @@ class TestService{
         } else {
             $this->testModel->addResult($tmp);
         }
-        if ($totalMark / $data['mark'] >= 0.6) {
-            return 1;
+        $mark_in_percents = round($totalMark / $data['mark'] * 100, 2);
+        if ($totalMark / $data['mark'] >= 0.75) {
+            return "Success! Your mark is $totalMark from {$data['mark']}().";
         }
-        return 0;
+        return "Fail! Your mark is $totalMark from {$data['mark']}.";
     }
 }

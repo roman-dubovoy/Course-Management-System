@@ -61,30 +61,21 @@ class UserService{
     }
 
     public function getSubscribedUsersListByPeriod(array $data){
-        if ($this->courseModel->isCourseCreated($data['id_course'])){
-            $subscribedUsersList = $this->userModel->getSubscribedUsersListByPeriod($data);
-            if (!empty($subscribedUsersList)){
-                return $subscribedUsersList;
-            }
-            else
-                throw new EntityNotFoundException("Users subscribed on course with id: {$data['id_course']} in specified period were not found.");
-
+        $subscribedUsersList = $this->userModel->getSubscribedUsersListByPeriod($data);
+        if (!empty($subscribedUsersList)){
+            return $subscribedUsersList;
         }
         else
-            throw new EntityNotFoundException("Course with id: {$data['id_course']} was not found.");
+            throw new EntityNotFoundException("Users subscribed in specified period were not found.");
     }
     
-    public function getBestStudentsList($id_course){
-        if ($this->courseModel->isCourseCreated($id_course)){
-            $bestStudentsList = $this->userModel->getBestStudentsListByCourseId($id_course);
-            if (!empty($bestStudentsList)){
-                return $bestStudentsList;
-            }
-            else
-                throw new EntityNotFoundException("Best students list was not found by course id: $id_course");
+    public function getBestStudentsList(){
+        $bestStudentsList = $this->userModel->getBestStudentsList();
+        if (!empty($bestStudentsList)){
+            return $bestStudentsList;
         }
         else
-            throw new EntityNotFoundException("Course with id: $id_course was not found.");
+            throw new EntityNotFoundException("Best students list was not found");
     }
 
     public function deleteUser($id_user)

@@ -103,7 +103,6 @@ class UserController{
 
     public function getSubscribedUsersListAction(){
         $data = [
-            'id_course' => strip_tags(trim($_POST['id_course'])),
             'start_date' => strip_tags(trim($_POST['start_date'])),
             'end_date' => strip_tags(trim($_POST['end_date']))
         ];
@@ -125,12 +124,8 @@ class UserController{
     }
 
     public function getBestStudentListAction(){
-        $id_course = strip_tags(trim($_POST['id_course']));
-        if (empty($id_course)){
-            HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: id_course");
-        }
         try{
-            $bestStudentsList = $this->userService->getBestStudentsList($id_course);
+            $bestStudentsList = $this->userService->getBestStudentsList();
             FrontController::getInstance()->setBody(json_encode($bestStudentsList));
         }catch (EntityNotFoundException $e) {
             HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());

@@ -27,6 +27,16 @@ class CourseModel extends Model{
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
     }
 
+    public function getCoursesCategoriesList(){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT * FROM courses_categories";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesCategories;
+    }
+
     /**
      * Checks if course with such title exists in DB. It's needed because title is unique.
      * @param $title
@@ -130,13 +140,50 @@ class CourseModel extends Model{
 
     public function getCoursesListByPeriod(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT * FROM courses WHERE date BETWEEN :start_date AND :end_date";
+        $sql = "SELECT id_course, title, description, courses.date AS creation_date, users.name AS author_name, 
+                       users.email AS author_email, courses_categories.name AS course_category
+                FROM courses INNER JOIN users INNER JOIN courses_categories
+                ON courses.id_auth = users.id_u AND courses.id_category = courses_categories.id_category
+                WHERE courses.date BETWEEN :start_date AND :end_date";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
         $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $coursesList;
     }
+
+    public function getCoursesListForTeacher($id_user){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT courses.id_course, title, description, 
+                       courses_categories.name AS course_category, courses.date AS creation_date
+                FROM courses 
+                INNER JOIN subscriptions
+                INNER JOIN users
+                INNER JOIN courses_categories
+                ON courses.id_course = subscriptions.id_course
+                AND subscriptions.id_u = users.id_u
+                AND courses.id_category = courses_categories.id_category
+                WHERE id_auth <> ? AND role = 'lecturer'";
+        $stmt = $link->prepare($sql);
+        $stmt->bindParam(1, $id_user, PDO::PARAM_INT);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesListForTeacher = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesListForTeacher;
+    }
+
+    public function getCoursesAmountForLastWeek(){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT COUNT(id_course) AS courses_amount FROM courses 
+                WHERE DATE_FORMAT(FROM_UNIXTIME(date), '%u') = WEEK(NOW()) - 1";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($link->errorInfo());
+        $amount = $stmt->fetch(PDO::FETCH_ASSOC)['courses_amount'];
+        return $amount;
+    }
+    
+    
 
     /**
      * Deletes course from DB by it id.
