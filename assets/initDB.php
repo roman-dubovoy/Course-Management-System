@@ -223,12 +223,12 @@ try {
 
 //comments
 $sql = "CREATE TABLE IF NOT EXISTS comments
-(id_com INT(11) NOT NULL AUTO_INCREMENT,
+(id_comment INT(11) NOT NULL AUTO_INCREMENT,
 comment TEXT NOT NULL,
 date INT(14) NOT NULL,
 id_u INT(11) NOT NULL,
 id_lesson INT(11) NOT NULL,
-PRIMARY KEY (id_com),
+PRIMARY KEY (id_comment),
 FOREIGN KEY (id_u) REFERENCES users(id_u)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
@@ -264,6 +264,67 @@ try {
         print_r($link->errorInfo());
     }
 } catch (PDOException $e) {
+    echo $e->getCode() . ": " . $e->getMessage();
+    exit();
+}
+
+//additional materials types
+$sql = "CREATE TABLE IF NOT EXISTS add_mat_types
+(id_add_mat_type INT(11) NOT NULL AUTO_INCREMENT,
+name VARCHAR(100) NOT NULL,
+PRIMARY KEY (id_add_mat_type),
+UNIQUE (name))";
+try{
+    $link->exec($sql);
+    if (!empty($link->errorInfo()[1])){
+        print_r($link->errorInfo());
+    }
+}catch (PDOException $e){
+    echo $e->getCode() . ": " . $e->getMessage();
+    exit();
+}
+
+
+$sql = "SELECT * FROM add_mat_types";
+try{
+    $stmt = $link->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (empty($result)){
+        $sql = "INSERT INTO add_mat_types (name) 
+        VALUES ('Video'), ('Audio'), ('Document'), 
+        ('Text')";
+        $link->exec($sql);
+        if (!empty($link->errorInfo()[1])) {
+            print_r($link->errorInfo());
+        }
+    }
+}catch (PDOException $e) {
+    echo $e->getCode() . ": " . $e->getMessage();
+    exit();
+}
+
+
+//additional materials
+$sql = "CREATE TABLE IF NOT EXISTS additional_materials
+(id_add_mat INT(11) NOT NULL AUTO_INCREMENT,
+name VARCHAR(50) NOT NULL,
+href VARCHAR(200) NOT NULL,
+id_lesson INT(11) NOT NULL,
+id_add_mat_type INT(11) NOT NULL,
+PRIMARY KEY (id_add_mat),
+FOREIGN KEY (id_lesson) REFERENCES lessons(id_lesson)
+ON DELETE CASCADE 
+ON UPDATE CASCADE,
+FOREIGN KEY (id_add_mat_type) REFERENCES add_mat_types(id_add_mat_type)
+ON DELETE CASCADE 
+ON UPDATE CASCADE)";
+try{
+    $link->exec($sql);
+    if (!empty($link->errorInfo()[1])){
+        print_r($link->errorInfo());
+    }
+}catch (PDOException $e){
     echo $e->getCode() . ": " . $e->getMessage();
     exit();
 }

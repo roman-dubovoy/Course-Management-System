@@ -185,6 +185,21 @@ class CourseController{
         }
     }
 
+    public function getOldestCoursesListByCategoriesAction(){
+        try{
+            $coursesList = $this->courseService->getOldestCoursesListByCategories();
+            FrontController::getInstance()->setBody(json_encode($coursesList));
+        }catch (EntityNotFoundException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, 'Not found', $e->getMessage());
+        }
+        catch (StatementExecutionException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+        catch (PDOException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
     public function deleteCourseAction(){
         $course_title = strip_tags(trim($_POST['title']));
         if (empty($course_title)){

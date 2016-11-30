@@ -27,7 +27,9 @@ class UserModel extends Model{
     
     public function isRegistered($email){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT id_u FROM users WHERE email = ?";
+        $sql = "SELECT id_u 
+                FROM users
+                WHERE email = ?";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $email, PDO::PARAM_STR);
         $stmt->execute();
@@ -50,7 +52,8 @@ class UserModel extends Model{
     public function getUserById($id)
     {
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT id_u, name, password, email, register_date, role FROM users 
+        $sql = "SELECT id_u, name, password, email, register_date, role 
+                FROM users 
                 WHERE id_u = ?";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $id, PDO::PARAM_INT);
@@ -73,7 +76,8 @@ class UserModel extends Model{
     public function unsubscribeFromCourse(array $data)
     {
         $connection = PDOConnection::getInstance()->getConnection();
-        $sql = "DELETE FROM subscriptions WHERE id_u = :id_u AND id_course = :id_course";
+        $sql = "DELETE FROM subscriptions 
+                WHERE id_u = :id_u AND id_course = :id_course";
         $stmt = $connection->prepare($sql);
         $stmt->execute($data);
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
@@ -82,7 +86,8 @@ class UserModel extends Model{
     public function isSubscribed(array $data)
     {
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT id_sub, id_u, id_course, date FROM subscriptions 
+        $sql = "SELECT id_sub, id_u, id_course, date 
+                FROM subscriptions 
                 WHERE id_u = :id_u AND id_course = :id_course";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
@@ -113,7 +118,7 @@ class UserModel extends Model{
         $link = PDOConnection::getInstance()->getConnection();
         $sql = "SELECT users.id_u, name, email, medium_mark, title AS course_title FROM users
                 INNER JOIN (SELECT DISTINCT id_user, AVG(result) AS medium_mark
-                            FROM results 
+                            FROM results
                             GROUP BY id_user
                             ORDER BY medium_mark DESC
                             LIMIT 10) user_result  
@@ -123,17 +128,31 @@ class UserModel extends Model{
                 AND users.id_u = subscriptions.id_u
                 AND subscriptions.id_course = courses.id_course";
         $stmt = $link->prepare($sql);
-        $stmt->bindParam(1, $id_course, PDO::PARAM_INT);
         $stmt->execute();
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
         $bestStudentsList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $bestStudentsList;
     }
 
+    public function getUsersListByNameFilter($name_filter){
+        $link = PDOConnection::getInstance()->getConnection();
+        $name_filter = $name_filter . "%";
+        $sql = "SELECT id_u, name, email, register_date, role 
+                FROM users 
+                WHERE name LIKE ?";
+        $stmt = $link->prepare($sql);
+        $stmt->bindParam(1, $name_filter, PDO::PARAM_STR);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $usersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $usersList;
+    }
+
     public function deleteUser($id_user)
     {
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "DELETE FROM users WHERE id_u = ?";
+        $sql = "DELETE FROM users 
+                WHERE id_u = ?";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $id_user, PDO::PARAM_INT);
         $stmt->execute();

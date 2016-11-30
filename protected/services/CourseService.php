@@ -110,6 +110,15 @@ class CourseService{
         else
             throw new EmptyEntityException("No courses created for the last week.");
     }
+    
+    public function getOldestCoursesListByCategories(){
+        $coursesList = $this->courseModel->getOldestCoursesListByCategories();
+        if (!empty($coursesList)){
+            return $coursesList;
+        }
+        else
+            throw new EntityNotFoundException("Courses were not found.");
+    }
 
     public function deleteCourse($course_title){
         if ($this->courseModel->isCourseWithTitleExists($course_title)) {

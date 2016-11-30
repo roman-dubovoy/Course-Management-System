@@ -78,6 +78,15 @@ class UserService{
             throw new EntityNotFoundException("Best students list was not found");
     }
 
+    public function getUsersListByNameFilter($name_filter){
+        $usersList = $this->userModel->getUsersListByNameFilter($name_filter);
+        if (!empty($usersList)){
+            return $usersList;
+        }
+        else
+            throw new EntityNotFoundException("No users with name starting with $name_filter...");
+    }
+
     public function deleteUser($id_user)
     {
         if ($this->userModel->getUserById($id_user)) {

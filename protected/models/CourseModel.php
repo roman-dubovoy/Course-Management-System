@@ -96,7 +96,9 @@ class CourseModel extends Model{
      */
     public function getCoursesListByLecturerEmail($email_lecturer){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT id_course, title, description, id_category FROM courses WHERE id_auth = (SELECT id_u FROM users WHERE email = ?)";
+        $sql = "SELECT id_course, title, description, id_category 
+                FROM courses 
+                WHERE id_auth = (SELECT id_u FROM users WHERE email = ?)";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $email_lecturer, PDO::PARAM_STR);
         $stmt->execute();
@@ -182,8 +184,25 @@ class CourseModel extends Model{
         $amount = $stmt->fetch(PDO::FETCH_ASSOC)['courses_amount'];
         return $amount;
     }
-    
-    
+
+    /**
+     * In each category finds the course which was created earlier then all others.
+     * Returns the list of such courses.
+     */
+    public function getOldestCoursesListByCategories(){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT title, name AS category, date
+                FROM courses INNER JOIN courses_categories
+                ON courses.id_category = courses_categories.id_category
+                GROUP BY courses.id_category
+                ORDER BY date ASC
+                LIMIT 1";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesList;
+    }
 
     /**
      * Deletes course from DB by it id.
@@ -206,7 +225,9 @@ class CourseModel extends Model{
      */
     public function updateCourse(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "UPDATE courses SET title = :title, description = :description, id_category = :id_category WHERE id_course = :id_course";
+        $sql = "UPDATE courses 
+                SET title = :title, description = :description, id_category = :id_category 
+                WHERE id_course = :id_course";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());

@@ -136,6 +136,25 @@ class UserController{
         }
     }
 
+    public function getUsersListByNameFilterAction(){
+        $name_filter = strip_tags(trim($_POST['name_filter']));
+        if (empty($name_filter)) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: name_filter");
+        }
+        try{
+            $usersList = $this->userService->getUsersListByNameFilter($name_filter);
+            FrontController::getInstance()->setBody(json_encode($usersList));
+        }catch (EntityNotFoundException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
+        }
+        catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+
     public function deleteUserAction()
     {
         $id_user = strip_tags(trim($_POST['id_user']));
