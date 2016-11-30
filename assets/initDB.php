@@ -3,7 +3,7 @@ include_once "settings.php";
 include_once $_SERVER['DOCUMENT_ROOT']."/protected/library/PDOConnection.php";
 
 try {
-    //localhost заменить на host!!!
+    //localhost change to host before deployment!!!
     $connect = new PDO("mysql:host=cms-course-work.com", DB_USER, DB_PASSWORD);
     $connect->exec("CREATE DATABASE IF NOT EXISTS `cms.com`");
 } catch (PDOException $e) {
