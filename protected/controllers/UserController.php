@@ -171,4 +171,17 @@ class UserController{
             HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
         }
     }
+
+    public function getOldestUsersListByRolesAction(){
+        try{
+            $usersList = $this->userService->getOldestUsersListByRoles();
+            FrontController::getInstance()->setBody(json_encode($usersList));
+        }catch (EntityNotFoundException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "User not found", $e->getMessage());
+        } catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
 }

@@ -98,7 +98,8 @@ class CourseModel extends Model{
         $link = PDOConnection::getInstance()->getConnection();
         $sql = "SELECT id_course, title, description, id_category 
                 FROM courses 
-                WHERE id_auth = (SELECT id_u FROM users WHERE email = ?)";
+                WHERE id_auth = (SELECT id_u FROM users WHERE email = ?)
+                ORDER BY title ASC";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $email_lecturer, PDO::PARAM_STR);
         $stmt->execute();
@@ -117,7 +118,8 @@ class CourseModel extends Model{
         $link = PDOConnection::getInstance()->getConnection();
         $sql = "SELECT * FROM courses LEFT JOIN subscriptions 
                 ON courses.id_course = subscriptions.id_course
-                WHERE id_u = ?";
+                WHERE id_u = ?
+                ORDER BY title ASC";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $id_user, PDO::PARAM_INT);
         $stmt->execute();
@@ -195,8 +197,9 @@ class CourseModel extends Model{
                 FROM courses INNER JOIN courses_categories
                 ON courses.id_category = courses_categories.id_category
                 GROUP BY courses.id_category
-                ORDER BY date ASC
-                LIMIT 1";
+                HAVING date <= ALL(SELECT date
+                                   FROM courses temp_courses
+                                   WHERE temp_courses.id_category = courses.id_category)";
         $stmt = $link->prepare($sql);
         $stmt->execute();
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());

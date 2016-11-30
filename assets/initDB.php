@@ -27,6 +27,7 @@ $sql = "CREATE TABLE IF NOT EXISTS users
  email VARCHAR(50) NOT NULL,
  register_date INT(14) NOT NULL,
  role VARCHAR(20) NOT NULL,
+ additional_info VARCHAR(200) DEFAULT NULL,
  PRIMARY KEY (id_u),
  UNIQUE (email))";
 try{
@@ -85,6 +86,7 @@ description TEXT NOT NULL,
 date INT(11) NOT NULL,
 id_auth INT(11),
 id_category INT(11),
+additional_info VARCHAR(200) DEFAULT NULL,
 UNIQUE (title),
 PRIMARY KEY (id_course),
 FOREIGN KEY (id_auth) REFERENCES users(id_u)

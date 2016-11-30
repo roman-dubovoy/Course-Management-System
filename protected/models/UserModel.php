@@ -1,7 +1,8 @@
 <?php
-include $_SERVER['DOCUMENT_ROOT']."/assets/settings.php";
+include $_SERVER['DOCUMENT_ROOT'] . "/assets/settings.php";
 
-class UserModel extends Model{
+class UserModel extends Model
+{
     private static $instance = null;
 
     protected function __construct()
@@ -16,7 +17,8 @@ class UserModel extends Model{
         return self::$instance;
     }
 
-    public function addUser(array $data){
+    public function addUser(array $data)
+    {
         $connection = PDOConnection::getInstance()->getConnection();
         $sql = "INSERT INTO users(name, password, email, register_date, role)
                 VALUES(:name, :password, :email, :register_date, :role)";
@@ -24,8 +26,9 @@ class UserModel extends Model{
         $stmt->execute($data);
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
     }
-    
-    public function isRegistered($email){
+
+    public function isRegistered($email)
+    {
         $link = PDOConnection::getInstance()->getConnection();
         $sql = "SELECT id_u 
                 FROM users
@@ -38,7 +41,8 @@ class UserModel extends Model{
         return !empty($user['id_u']);
     }
 
-    public function getUserByEmailPassword(array $data){
+    public function getUserByEmailPassword(array $data)
+    {
         $link = PDOConnection::getInstance()->getConnection();
         $sql = "SELECT id_u, name, password, email, register_date, role FROM users 
                 WHERE email = :email AND password = :password";
@@ -96,7 +100,8 @@ class UserModel extends Model{
         return !empty($subscription);
     }
 
-    public function getSubscribedUsersListByPeriod(array $data){
+    public function getSubscribedUsersListByPeriod(array $data)
+    {
         $link = PDOConnection::getInstance()->getConnection();
         $sql = "SELECT users.id_u, name, email, role, subscriptions.date AS subscription_date, title AS course_title
                 FROM users 
@@ -114,7 +119,8 @@ class UserModel extends Model{
         return $subscribedUsersList;
     }
 
-    public function getBestStudentsList(){
+    public function getBestStudentsList()
+    {
         $link = PDOConnection::getInstance()->getConnection();
         $sql = "SELECT users.id_u, name, email, medium_mark, title AS course_title FROM users
                 INNER JOIN (SELECT DISTINCT id_user, AVG(result) AS medium_mark
@@ -134,7 +140,8 @@ class UserModel extends Model{
         return $bestStudentsList;
     }
 
-    public function getUsersListByNameFilter($name_filter){
+    public function getUsersListByNameFilter($name_filter)
+    {
         $link = PDOConnection::getInstance()->getConnection();
         $name_filter = $name_filter . "%";
         $sql = "SELECT id_u, name, email, register_date, role 
@@ -157,5 +164,20 @@ class UserModel extends Model{
         $stmt->bindParam(1, $id_user, PDO::PARAM_INT);
         $stmt->execute();
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+    }
+
+    public function getOldestUsersListByRoles()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT name, email, register_date, role FROM users 
+                GROUP BY role
+                HAVING register_date <= ALL (SELECT register_date 
+                                             FROM users temp_users
+                                             WHERE temp_users.role = users.role)";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $usersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $usersList;
     }
 }

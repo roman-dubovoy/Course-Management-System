@@ -95,4 +95,13 @@ class UserService{
             throw new EntityNotFoundException("User with id: " . $id_user . "does not exists.");
         }
     }
+
+    public function getOldestUsersListByRoles(){
+        $usersList = $this->userModel->getOldestUsersListByRoles();
+        if (!empty($usersList)){
+            return $usersList;
+        }
+        else
+            throw new EntityNotFoundException("Users were not found.");
+    }
 }
