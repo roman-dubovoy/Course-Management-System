@@ -93,7 +93,6 @@ class TestController{
 
     public function estimateAction()
     {
-        $result = 0;
         $data = json_decode(file_get_contents("php://input"), true);
         foreach ($data as $key => $value) {
             if (empty($value)) {
@@ -102,7 +101,7 @@ class TestController{
         }
         try {
             $result = $this->testService->estimateTest($data);
-            FrontController::getInstance()->setBody("{result: $result}");
+            FrontController::getInstance()->setBody(json_encode($result));
             http_response_code(200);
         } catch (EntityNotFoundException $e) {
             HTTPResponseBuilder::getInstance()->sendFailRespond(404, 'Not found', $e->getMessage());

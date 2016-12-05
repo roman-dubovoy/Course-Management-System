@@ -235,4 +235,21 @@ class CourseModel extends Model{
         $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
     }
+
+    public function getCoursesListByTitleFilter($titleFilter)
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $titleFilter = $titleFilter . '%';
+        $sql = "SELECT id_course, title, description, date, courses_categories.name AS category
+                FROM courses
+                INNER JOIN courses_categories
+                ON courses.id_category = courses_categories.id_category
+                WHERE title LIKE ?";
+        $stmt = $link->prepare($sql);
+        $stmt->bindParam(1, $titleFilter, PDO::PARAM_STR);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesList;
+    }
 }

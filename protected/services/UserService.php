@@ -104,4 +104,60 @@ class UserService{
         else
             throw new EntityNotFoundException("Users were not found.");
     }
+
+    public function getUsersAmountSubscribedForLastMonth()
+    {
+        $usersAmount = $this->userModel->getUsersAmountSubscribedForLastMonth();
+        return $usersAmount;
+    }
+
+    public function getUsersAndPassedTestsAmountList()
+    {
+        $usersList = $this->userModel->getUsersAndPassedTestsAmountList();
+        if (!empty($usersList)){
+            return $usersList;
+        }
+        else
+            throw new EntityNotFoundException("No users with passed tests.");
+    }
+
+    public function getUsersAndSubscriptionsAmountList()
+    {
+        $usersList = $this->userModel->getUsersAndSubscriptionsAmountList();
+        if (!empty($usersList)){
+            return $usersList;
+        }
+        else
+            throw new EntityNotFoundException("No users subscribed on any course.");
+    }
+    
+    public function getTeachersWithMaxCoursesAmount()
+    {
+        $teachers = $this->userModel->getTeachersWithMaxCoursesAmount();
+        if (!empty($teachers)){
+            return $teachers;
+        }
+        else
+            throw new EntityNotFoundException("No teachers found.");
+    }
+    
+    public function getStudentsWithNonePassedTests()
+    {
+        $studentsList = $this->userModel->getStudentsWithNonePassedTests();
+        if (!empty($studentsList)){
+            return $studentsList;
+        }
+        else
+            throw new EntityNotFoundException("No students found.");
+    }
+
+    public function getTeachersWithNoneCreatedCourses()
+    {
+        $teachersList = $this->userModel->getTeachersWithNoneCreatedCoursesByWeek();
+        if (!empty($teachersList)){
+            return $teachersList;
+        }
+        else
+            throw new EntityNotFoundException("No teachers found.");
+    }
 }

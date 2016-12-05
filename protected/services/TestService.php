@@ -109,8 +109,8 @@ class TestService{
         }
         $mark_in_percents = round($totalMark / $data['mark'] * 100, 2);
         if ($totalMark / $data['mark'] >= 0.75) {
-            return "Success! Your mark is $totalMark from {$data['mark']}().";
+            return ['result' => "Success! Your mark is $totalMark from {$data['mark']}({$mark_in_percents}% from 100%)."];
         }
-        return "Fail! Your mark is $totalMark from {$data['mark']}.";
+        return ['result' => "Fail! Your mark is $totalMark from {$data['mark']}({$mark_in_percents}% from 100%)."];
     }
 }

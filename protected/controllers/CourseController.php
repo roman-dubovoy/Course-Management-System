@@ -247,4 +247,23 @@ class CourseController{
             HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", "Updating course failed. " . $e->getMessage());
         }
     }
+
+    public function getCoursesListByTitleFilterAction(){
+        $titleFilter = strip_tags(trim($_POST['title_filter']));
+        if (empty($titleFilter)){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: title_filter");
+        }
+        try{
+            $coursesList = $this->courseService->getCoursesListByTitleFilter($titleFilter);
+            FrontController::getInstance()->setBody(json_encode($coursesList));
+        }catch (EntityNotFoundException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, 'Not found', $e->getMessage());
+        }
+        catch (StatementExecutionException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+        catch (PDOException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", "Updating course failed. " . $e->getMessage());
+        }
+    }
 }

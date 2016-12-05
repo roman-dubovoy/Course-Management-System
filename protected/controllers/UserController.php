@@ -7,7 +7,8 @@ class UserController{
         $this->userService = UserService::getInstance();
     }
 
-    public function registerUserAction(){
+    public function registerUserAction()
+    {
         $data = [
             'name' => strip_tags(trim($_POST['name'])),
             'email' => strip_tags(trim($_POST['email'])),
@@ -34,7 +35,8 @@ class UserController{
         }
     }
 
-    public function meAction(){
+    public function meAction()
+    {
         $data = [
             'email' => strip_tags(trim($_POST['email'])),
             'password' => hash("sha256", strip_tags(trim($_POST['password'])))
@@ -58,7 +60,8 @@ class UserController{
         }
     }
     
-    public function subscribeAction(){
+    public function subscribeAction()
+    {
         $data = [
             'id_course' => strip_tags(trim($_POST['id_course'])),
             'id_u' => strip_tags(trim($_POST['id_u']))
@@ -80,7 +83,8 @@ class UserController{
         }
     }
 
-    public function unsubscribeAction(){
+    public function unsubscribeAction()
+    {
         $data = [
             'id_course' => strip_tags(trim($_POST['id_course'])),
             'id_u' => strip_tags(trim($_POST['id_u']))
@@ -101,7 +105,8 @@ class UserController{
         }
     }
 
-    public function getSubscribedUsersListAction(){
+    public function getSubscribedUsersListAction()
+    {
         $data = [
             'start_date' => strip_tags(trim($_POST['start_date'])),
             'end_date' => strip_tags(trim($_POST['end_date']))
@@ -123,7 +128,8 @@ class UserController{
         }
     }
 
-    public function getBestStudentListAction(){
+    public function getBestStudentListAction()
+    {
         try{
             $bestStudentsList = $this->userService->getBestStudentsList();
             FrontController::getInstance()->setBody(json_encode($bestStudentsList));
@@ -136,7 +142,8 @@ class UserController{
         }
     }
 
-    public function getUsersListByNameFilterAction(){
+    public function getUsersListByNameFilterAction()
+    {
         $name_filter = strip_tags(trim($_POST['name_filter']));
         if (empty($name_filter)) {
             HTTPResponseBuilder::getInstance()->sendFailRespond(400, "Missing params", "Missing param: name_filter");
@@ -172,12 +179,92 @@ class UserController{
         }
     }
 
-    public function getOldestUsersListByRolesAction(){
+    public function getOldestUsersListByRolesAction()
+    {
         try{
             $usersList = $this->userService->getOldestUsersListByRoles();
             FrontController::getInstance()->setBody(json_encode($usersList));
         }catch (EntityNotFoundException $e) {
-            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "User not found", $e->getMessage());
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
+        } catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+    public function getUsersAmountSubscribedForLastMonthAction()
+    {
+        try{
+            $userAmount = $this->userService->getUsersAmountSubscribedForLastMonth();
+            FrontController::getInstance()->setBody(json_encode(['userAmountSubscribedForLastMonth' => $userAmount]));
+        }catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+    public function getUsersAndPassedTestsAmountListAction()
+    {
+        try{
+            $usersList = $this->userService->getUsersAndPassedTestsAmountList();
+            FrontController::getInstance()->setBody(json_encode($usersList));
+        }catch (EntityNotFoundException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
+        } catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+    
+    public function getUsersAndSubscriptionsAmountListAction()
+    {
+        try{
+            $usersList = $this->userService->getUsersAndSubscriptionsAmountList();
+            FrontController::getInstance()->setBody(json_encode($usersList));
+        }catch (EntityNotFoundException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
+        } catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+    public function getTeachersWithMaxCoursesAmountAction(){
+        try{
+            $teachers = $this->userService->getTeachersWithMaxCoursesAmount();
+            FrontController::getInstance()->setBody(json_encode($teachers));
+        }catch (EntityNotFoundException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
+        } catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+    public function getStudentsWithNonePassedTestsAction(){
+        try{
+            $studentsList = $this->userService->getStudentsWithNonePassedTests();
+            FrontController::getInstance()->setBody(json_encode($studentsList));
+        }catch (EntityNotFoundException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
+        } catch (PDOException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        } catch (StatementExecutionException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+    }
+
+    public function getTeachersWithNoneCreatedCoursesAction(){
+        try{
+            $teachersList = $this->userService->getTeachersWithNoneCreatedCourses();
+            FrontController::getInstance()->setBody(json_encode($teachersList));
+        }catch (EntityNotFoundException $e) {
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", $e->getMessage());
         } catch (PDOException $e) {
             HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
         } catch (StatementExecutionException $e) {

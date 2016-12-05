@@ -109,9 +109,7 @@ class UserModel extends Model
                 INNER JOIN courses
                 ON users.id_u = subscriptions.id_u
                 AND subscriptions.id_course = courses.id_course
-                WHERE users.id_u IN(SELECT id_u
-                                    FROM subscriptions
-                                    WHERE date BETWEEN :start_date AND :end_date)";
+                WHERE date BETWEEN :start_date AND :end_date";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
@@ -122,17 +120,17 @@ class UserModel extends Model
     public function getBestStudentsList()
     {
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT users.id_u, name, email, medium_mark, title AS course_title FROM users
+        $sql = "SELECT DISTINCT users.id_u, name, email, medium_mark
+                FROM users
                 INNER JOIN (SELECT DISTINCT id_user, AVG(result) AS medium_mark
                             FROM results
                             GROUP BY id_user
                             ORDER BY medium_mark DESC
                             LIMIT 10) user_result  
                 INNER JOIN subscriptions
-                INNER JOIN courses
                 ON users.id_u = user_result.id_user 
                 AND users.id_u = subscriptions.id_u
-                AND subscriptions.id_course = courses.id_course";
+                ORDER BY medium_mark DESC";
         $stmt = $link->prepare($sql);
         $stmt->execute();
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
@@ -179,5 +177,107 @@ class UserModel extends Model
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
         $usersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $usersList;
+    }
+
+    public function getUsersAmountSubscribedForLastMonth()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT COUNT(id_sub) AS subscr_amount
+                FROM subscriptions
+                WHERE DATE_FORMAT(FROM_UNIXTIME(date), '%m') = MONTH(NOW()) - 1";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $subscriptionAmount = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $subscriptionAmount;
+    }
+
+    public function getUsersAndPassedTestsAmountList()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT id_u, name, email, COUNT(id_result) AS passed_tests_amount
+                FROM users
+                INNER JOIN results
+                ON users.id_u = results.id_user
+                GROUP BY results.id_user";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $userList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $userList;
+    }
+
+    public function getUsersAndSubscriptionsAmountList()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT users.id_u, name, email, COUNT(id_sub) AS subscriptions_amount
+                FROM users
+                INNER JOIN subscriptions
+                ON users.id_u = subscriptions.id_u
+                GROUP BY subscriptions.id_u";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $usersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $usersList;
+    }
+
+    public function getTeachersWithMaxCoursesAmount()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT id_u, name, email, COUNT(id_course) AS courses_amount
+                FROM users
+                INNER JOIN courses
+                ON users.id_u = courses.id_auth
+                GROUP BY courses.id_auth
+                HAVING COUNT(id_course) >= ALL( SELECT COUNT(id_course)
+                                                FROM courses
+                                                GROUP BY id_auth )";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $teacher = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $teacher;
+    }
+
+    public function getStudentsWithNonePassedTests()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT users.id_u, users.name, users.email
+                FROM users
+                LEFT JOIN (
+                    SELECT id_u, name, email
+                    FROM users
+                    INNER JOIN results
+                    ON users.id_u = results.id_user
+                ) AS student_with_passed_tests
+                ON users.id_u = student_with_passed_tests.id_u
+                WHERE student_with_passed_tests.id_u IS NULL ";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $studentsList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $studentsList;
+    }
+
+    public function getTeachersWithNoneCreatedCoursesByWeek()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT users.id_u, users.name, users.email
+                FROM users
+                LEFT JOIN (
+                    SELECT id_u, name, email
+                    FROM users
+                    INNER JOIN courses
+                    ON users.id_u = courses.id_auth
+                    WHERE DATE_FORMAT(FROM_UNIXTIME(courses.date), '%u') = WEEK(NOW()) - 1
+                ) AS teachers_with_created_courses
+                ON users.id_u = teachers_with_created_courses.id_u
+                WHERE teachers_with_created_courses.id_u IS NULL";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $teachersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $teachersList;
     }
 }

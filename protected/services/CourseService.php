@@ -140,4 +140,13 @@ class CourseService{
             throw new EntityNotFoundException("Course with id: " . $data['id_course'] ." does not exist.");
         }
     }
+    
+    public function getCoursesListByTitleFilter($titleFilter){
+        $coursesList = $this->courseModel->getCoursesListByTitleFilter($titleFilter);
+        if (!empty($coursesList)){
+            return $coursesList;
+        }
+        else
+            throw new EntityNotFoundException("Courses were not found by title filter: $titleFilter");
+    }
 }
