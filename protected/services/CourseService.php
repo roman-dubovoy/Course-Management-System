@@ -104,11 +104,8 @@ class CourseService{
     
     public function getCoursesAmountForLastWeek(){
         $amount = $this->courseModel->getCoursesAmountForLastWeek();
-        if (!empty($amount)){
-            return (int)$amount;
-        }
-        else
-            throw new EmptyEntityException("No courses created for the last week.");
+        if ($amount >= 0)
+            return $amount;
     }
     
     public function getOldestCoursesListByCategories(){

@@ -182,13 +182,13 @@ class UserModel extends Model
     public function getUsersAmountSubscribedForLastMonth()
     {
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT COUNT(id_sub) AS subscr_amount
+        $sql = "SELECT COUNT(id_sub)
                 FROM subscriptions
                 WHERE DATE_FORMAT(FROM_UNIXTIME(date), '%m') = MONTH(NOW()) - 1";
         $stmt = $link->prepare($sql);
         $stmt->execute();
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
-        $subscriptionAmount = $stmt->fetch(PDO::FETCH_ASSOC);
+        $subscriptionAmount = $stmt->fetch(PDO::FETCH_NUM);
         return $subscriptionAmount;
     }
 
@@ -280,19 +280,4 @@ class UserModel extends Model
         $teachersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $teachersList;
     }
-
-    /*public function getUsersListWithRoles()
-    {
-        $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT id_u, name, email, additional_info
-        
-        ";
-    }
-
-    public function updateAdditionalInfo()
-    {
-        $link = PDOConnection::getInstance()->getConnection();
-        $sql = "UPDATE users
-                SET additional_info = 'only student'";
-    }*/
 }

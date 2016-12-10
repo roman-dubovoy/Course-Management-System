@@ -108,7 +108,8 @@ class UserService{
     public function getUsersAmountSubscribedForLastMonth()
     {
         $usersAmount = $this->userModel->getUsersAmountSubscribedForLastMonth();
-        return $usersAmount;
+        if ($usersAmount >= 0)
+            return $usersAmount;
     }
 
     public function getUsersAndPassedTestsAmountList()

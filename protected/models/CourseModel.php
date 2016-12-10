@@ -178,12 +178,13 @@ class CourseModel extends Model{
 
     public function getCoursesAmountForLastWeek(){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT COUNT(id_course) AS courses_amount FROM courses 
+        $sql = "SELECT COUNT(id_course) 
+                FROM courses 
                 WHERE DATE_FORMAT(FROM_UNIXTIME(date), '%u') = WEEK(NOW()) - 1";
         $stmt = $link->prepare($sql);
         $stmt->execute();
         CourseModel::checkErrorArrayEmptiness($link->errorInfo());
-        $amount = $stmt->fetch(PDO::FETCH_ASSOC)['courses_amount'];
+        $amount = $stmt->fetch(PDO::FETCH_NUM);
         return $amount;
     }
 
