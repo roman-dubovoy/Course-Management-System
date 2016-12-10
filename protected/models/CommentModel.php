@@ -23,18 +23,18 @@ class CommentModel extends Model{
 
     public function isCommentCreated($id_comment){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT * FROM comments WHERE id_comment = ?";
+        $sql = "SELECT * FROM comments WHERE id_com = ?";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $id_comment, PDO::PARAM_INT);
         $stmt->execute();
         CommentModel::checkErrorArrayEmptiness($stmt->errorInfo());
         $comment = $stmt->fetch(PDO::FETCH_ASSOC);
-        return !empty($comment['id_comment']);
+        return !empty($comment['id_com']);
     }
     
     public function getCommentsListByLessonId($id_lesson){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT id_comment, comment, date, users.id_u, users.name, users.email 
+        $sql = "SELECT id_com, comment, date, users.id_u, users.name, users.email 
                 FROM comments
                 INNER JOIN users
                 ON comments.id_u = users.id_u
@@ -49,7 +49,7 @@ class CommentModel extends Model{
 
     public function deleteCommentByUserId(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "DELETE FROM comments WHERE id_comment = :id_comment AND id_u = :id_u";
+        $sql = "DELETE FROM comments WHERE id_com = :id_comment AND id_u = :id_u";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         CommentModel::checkErrorArrayEmptiness($stmt->errorInfo());

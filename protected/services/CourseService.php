@@ -149,4 +149,27 @@ class CourseService{
         else
             throw new EntityNotFoundException("Courses were not found by title filter: $titleFilter");
     }
+    
+    public function updateCoursesAdditionalInfo(){
+        $this->courseModel->updateCoursesAdditionalInfoWithMaxSubscriptionsAmount();
+        $coursesIdsList = $this->courseModel->getCoursesIdWithoutSubscriptions();
+        $coursesIds = "";
+        for ($i = 0; $i < count($coursesIdsList); $i++){
+            if ($i == count($coursesIdsList) - 1)
+                $coursesIds = $coursesIds . $coursesIdsList[$i][0];
+            else
+                $coursesIds = $coursesIds . $coursesIdsList[$i][0] . ',';
+        }
+        $this->courseModel->updateCoursesAdditionalInfoWithoutSubscriptions($coursesIds);
+        $this->courseModel->updateCoursesAdditionalInfoAsDefault($coursesIds);
+    }
+
+    public function getCoursesListWithAdditionalInfo(){
+        $coursesList = $this->courseModel->getCoursesListWithAdditionalInfo();
+        if (!empty($coursesList)){
+            return $coursesList;
+        }
+        else
+            throw new EntityNotFoundException("No courses found.");
+    }
 }

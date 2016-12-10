@@ -225,7 +225,7 @@ try {
 
 //comments
 $sql = "CREATE TABLE IF NOT EXISTS comments
-(id_comment INT(11) NOT NULL AUTO_INCREMENT,
+(id_com INT(11) NOT NULL AUTO_INCREMENT,
 comment TEXT NOT NULL,
 date INT(14) NOT NULL,
 id_u INT(11) NOT NULL,

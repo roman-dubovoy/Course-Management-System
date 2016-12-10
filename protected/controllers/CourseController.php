@@ -266,4 +266,32 @@ class CourseController{
             HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", "Updating course failed. " . $e->getMessage());
         }
     }
+
+    public function updateCoursesAdditionalInfoAction(){
+        try{
+            $this->courseService->updateCoursesAdditionalInfo();
+            http_response_code(200);
+        }catch (StatementExecutionException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+        catch (PDOException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", "Updating course failed. " . $e->getMessage());
+        }
+    }
+
+    public function getCoursesListWithAdditionalInfoAction(){
+        try{
+            $coursesList = $this->courseService->getCoursesListWithAdditionalInfo();
+            FrontController::getInstance()->setBody(json_encode($coursesList));
+            http_response_code(200);
+        }catch (EntityNotFoundException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(404, 'Not found', $e->getMessage());
+        }
+        catch (StatementExecutionException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", $e->getMessage());
+        }
+        catch (PDOException $e){
+            HTTPResponseBuilder::getInstance()->sendFailRespond(500, "Internal error", "Updating course failed. " . $e->getMessage());
+        }
+    }
 }

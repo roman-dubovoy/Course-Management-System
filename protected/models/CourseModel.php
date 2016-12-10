@@ -252,4 +252,73 @@ class CourseModel extends Model{
         $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $coursesList;
     }
+
+    public function updateCoursesAdditionalInfoWithMaxSubscriptionsAmount()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "UPDATE courses
+                SET additional_info = 'Has maximum subscriptions amount'
+                WHERE id_course IN (SELECT id_course
+                                    FROM subscriptions
+                                    GROUP BY id_course
+                                    HAVING COUNT(id_sub) >= ALL (SELECT id_course
+                                                                FROM subscriptions
+                                                                GROUP BY id_course))";
+        $link->exec($sql);
+    }
+
+    public function updateCoursesAdditionalInfoWithoutSubscriptions($coursesIds)
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "UPDATE courses
+                SET additional_info = 'Has any subscriptions yet'
+                WHERE id_course IN ($coursesIds)";
+        $link->exec($sql);
+    }
+
+    public function updateCoursesAdditionalInfoAsDefault($coursesIdsWithoutSubscriptions){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "UPDATE courses
+                SET additional_info = NULL
+                WHERE id_course NOT IN ($coursesIdsWithoutSubscriptions)
+                AND additional_info <> 'Has maximum subscriptions amount'";
+        $link->exec($sql);
+    }
+
+    public function getCoursesIdWithoutSubscriptions()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT courses.id_course
+                FROM courses
+                LEFT JOIN (
+                    SELECT id_course
+                    FROM subscriptions
+                  ) AS courses_with_subscriptions
+                ON courses.id_course = courses_with_subscriptions.id_course
+                WHERE courses_with_subscriptions.id_course IS NULL";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        AddmatModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesIds = $stmt->fetchAll(PDO::FETCH_NUM);
+        return $coursesIds;
+    }
+
+    public function getCoursesListWithAdditionalInfo()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "(SELECT *
+                FROM courses
+                WHERE additional_info = 'Has maximum subscriptions amount')
+                    UNION
+                (
+                    SELECT *
+                    FROM courses
+                    WHERE additional_info = 'Has any subscriptions yet'
+                )";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesList;
+    }
 }

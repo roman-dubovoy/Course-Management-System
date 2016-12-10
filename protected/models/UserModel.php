@@ -252,7 +252,7 @@ class UserModel extends Model
                     ON users.id_u = results.id_user
                 ) AS student_with_passed_tests
                 ON users.id_u = student_with_passed_tests.id_u
-                WHERE student_with_passed_tests.id_u IS NULL ";
+                WHERE student_with_passed_tests.id_u IS NULL AND role = 'student'";
         $stmt = $link->prepare($sql);
         $stmt->execute();
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());
@@ -280,4 +280,19 @@ class UserModel extends Model
         $teachersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $teachersList;
     }
+
+    /*public function getUsersListWithRoles()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT id_u, name, email, additional_info
+        
+        ";
+    }
+
+    public function updateAdditionalInfo()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "UPDATE users
+                SET additional_info = 'only student'";
+    }*/
 }
