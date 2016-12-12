@@ -21,7 +21,8 @@ class CourseModel extends Model{
      */
     public function addCourse(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "INSERT INTO courses(title, description, date, id_auth, id_category) VALUES(:title, :description, :date, :id_auth, :id_category)";
+        $sql = "INSERT INTO courses(title, description, date, id_auth, id_category) 
+                VALUES(:title, :description, :date, :id_auth, :id_category)";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
@@ -116,7 +117,8 @@ class CourseModel extends Model{
      */
     public function getCoursesListByUserSubscription($id_user){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT * FROM courses LEFT JOIN subscriptions 
+        $sql = "SELECT * FROM courses
+                LEFT JOIN subscriptions 
                 ON courses.id_course = subscriptions.id_course
                 WHERE id_u = ?
                 ORDER BY title ASC";

@@ -273,7 +273,7 @@ class UserModel extends Model
                     WHERE DATE_FORMAT(FROM_UNIXTIME(courses.date), '%u') = WEEK(NOW()) - 1
                 ) AS teachers_with_created_courses
                 ON users.id_u = teachers_with_created_courses.id_u
-                WHERE teachers_with_created_courses.id_u IS NULL";
+                WHERE teachers_with_created_courses.id_u IS NULL AND role = 'lecturer'";
         $stmt = $link->prepare($sql);
         $stmt->execute();
         UserModel::checkErrorArrayEmptiness($stmt->errorInfo());

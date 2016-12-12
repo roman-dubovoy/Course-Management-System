@@ -14,11 +14,11 @@ class StatisticsController{
         try {
             $coursesAmount = $this->courseService->getCoursesAmountForLastWeek();
             if (!empty($coursesAmount)){
-                $data['Amount of courses created for previous week'] = $coursesAmount[0];
+                $data['am_cs_week'] = 'Amount of courses created for previous week: '. $coursesAmount[0];
             }
             $subscriptionsAmount = $this->userService->getUsersAmountSubscribedForLastMonth();
             if (!empty($subscriptionsAmount)){
-                $data['Amount of subscriptions for previous month'] = $subscriptionsAmount[0];
+                $data['am_sub_mon'] = 'Amount of subscriptions for previous month: ' . $subscriptionsAmount[0];
             }
             if (empty($data)){
                 HTTPResponseBuilder::getInstance()->sendFailRespond(404, "Not found", "Statistics data was not found.");

@@ -18,7 +18,8 @@ class AddmatModel extends Model{
         $sql = "INSERT INTO additional_materials(name, href, id_lesson, id_add_mat_type)
                 VALUES (:name, :href, :id_lesson, :id_add_mat_type)";
         $stmt = $link->prepare($sql);
-        $stmt->execute($data);
+        $stmt->execute([':name' => $data['name'], ':href' => $data['href'],
+                        ':id_lesson' => $data['id_lesson'], 'id_add_mat_type' => $data['id_add_mat_type']]);
         AddmatModel::checkErrorArrayEmptiness($stmt->errorInfo());
     }
 

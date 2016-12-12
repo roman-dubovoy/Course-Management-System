@@ -92,7 +92,6 @@ class TestService{
         $totalMark = 0;
         foreach ($data['answers'] as $answer_id) {
             $answer = $this->answerService->getAnswerById($answer_id)[0];
-            var_dump($answer);
             if (!empty($answer['is_correct'])) {
                 $totalMark += (float)$this->questionService->getQuestionById($answer['id_question'])['points'];
             }
