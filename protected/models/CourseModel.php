@@ -21,10 +21,21 @@ class CourseModel extends Model{
      */
     public function addCourse(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "INSERT INTO courses(title, description, date, id_auth) VALUES(:title, :description, :date, :id_auth)";
+        $sql = "INSERT INTO courses(title, description, date, id_auth, id_category) 
+                VALUES(:title, :description, :date, :id_auth, :id_category)";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+    }
+
+    public function getCoursesCategoriesList(){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT * FROM courses_categories";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesCategories;
     }
 
     /**
@@ -86,7 +97,10 @@ class CourseModel extends Model{
      */
     public function getCoursesListByLecturerEmail($email_lecturer){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT id_course, title, description FROM courses WHERE id_auth = (SELECT id_u FROM users WHERE email = ?)";
+        $sql = "SELECT id_course, title, description, id_category 
+                FROM courses 
+                WHERE id_auth = (SELECT id_u FROM users WHERE email = ?)
+                ORDER BY title ASC";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $email_lecturer, PDO::PARAM_STR);
         $stmt->execute();
@@ -103,9 +117,11 @@ class CourseModel extends Model{
      */
     public function getCoursesListByUserSubscription($id_user){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "SELECT * FROM courses LEFT JOIN subscriptions 
+        $sql = "SELECT * FROM courses
+                LEFT JOIN subscriptions 
                 ON courses.id_course = subscriptions.id_course
-                WHERE id_u = ?";
+                WHERE id_u = ?
+                ORDER BY title ASC";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $id_user, PDO::PARAM_INT);
         $stmt->execute();
@@ -126,6 +142,72 @@ class CourseModel extends Model{
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
         $allCoursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $allCoursesList;
+    }
+
+    public function getCoursesListByPeriod(array $data){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT id_course, title, description, courses.date AS creation_date, users.name AS author_name, 
+                       users.email AS author_email, courses_categories.name AS course_category
+                FROM courses INNER JOIN users INNER JOIN courses_categories
+                ON courses.id_auth = users.id_u AND courses.id_category = courses_categories.id_category
+                WHERE courses.date BETWEEN :start_date AND :end_date";
+        $stmt = $link->prepare($sql);
+        $stmt->execute($data);
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesList;
+    }
+
+    public function getCoursesListForTeacher($id_user){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT courses.id_course, title, description, 
+                       courses_categories.name AS course_category, courses.date AS creation_date
+                FROM courses 
+                INNER JOIN subscriptions
+                INNER JOIN users
+                INNER JOIN courses_categories
+                ON courses.id_course = subscriptions.id_course
+                AND subscriptions.id_u = users.id_u
+                AND courses.id_category = courses_categories.id_category
+                WHERE id_auth <> ? AND role = 'lecturer'";
+        $stmt = $link->prepare($sql);
+        $stmt->bindParam(1, $id_user, PDO::PARAM_INT);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesListForTeacher = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesListForTeacher;
+    }
+
+    public function getCoursesAmountForLastWeek(){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT COUNT(id_course) 
+                FROM courses 
+                WHERE DATE_FORMAT(FROM_UNIXTIME(date), '%u') = WEEK(NOW()) - 1";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($link->errorInfo());
+        $amount = $stmt->fetch(PDO::FETCH_NUM);
+        return $amount;
+    }
+
+    /**
+     * In each category finds the course which was created earlier then all others.
+     * Returns the list of such courses.
+     */
+    public function getOldestCoursesListByCategories(){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT title, name AS category, date
+                FROM courses INNER JOIN courses_categories
+                ON courses.id_category = courses_categories.id_category
+                GROUP BY courses.id_category
+                HAVING date <= ALL(SELECT date
+                                   FROM courses temp_courses
+                                   WHERE temp_courses.id_category = courses.id_category)";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesList;
     }
 
     /**
@@ -149,9 +231,97 @@ class CourseModel extends Model{
      */
     public function updateCourse(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "UPDATE courses SET title = :title, description = :description WHERE id_course = :id_course";
+        $sql = "UPDATE courses 
+                SET title = :title, description = :description, id_category = :id_category 
+                WHERE id_course = :id_course";
         $stmt = $link->prepare($sql);
-        $stmt->execute(array(':title' => $data['title'], 'description' => $data['description'], 'id_course' => $data['id_course']));
+        $stmt->execute($data);
         CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+    }
+
+    public function getCoursesListByTitleFilter($titleFilter)
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $titleFilter = $titleFilter . '%';
+        $sql = "SELECT id_course, title, description, date, courses_categories.name AS category
+                FROM courses
+                INNER JOIN courses_categories
+                ON courses.id_category = courses_categories.id_category
+                WHERE title LIKE ?";
+        $stmt = $link->prepare($sql);
+        $stmt->bindParam(1, $titleFilter, PDO::PARAM_STR);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesList;
+    }
+
+    public function updateCoursesAdditionalInfoWithMaxSubscriptionsAmount()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "UPDATE courses
+                SET additional_info = 'Has maximum subscriptions amount'
+                WHERE id_course IN (SELECT id_course
+                                    FROM subscriptions
+                                    GROUP BY id_course
+                                    HAVING COUNT(id_sub) >= ALL (SELECT id_course
+                                                                FROM subscriptions
+                                                                GROUP BY id_course))";
+        $link->exec($sql);
+    }
+
+    public function updateCoursesAdditionalInfoWithoutSubscriptions($coursesIds)
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "UPDATE courses
+                SET additional_info = 'Has any subscriptions yet'
+                WHERE id_course IN ($coursesIds)";
+        $link->exec($sql);
+    }
+
+    public function updateCoursesAdditionalInfoAsDefault($coursesIdsWithoutSubscriptions){
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "UPDATE courses
+                SET additional_info = NULL
+                WHERE id_course NOT IN ($coursesIdsWithoutSubscriptions)
+                AND additional_info <> 'Has maximum subscriptions amount'";
+        $link->exec($sql);
+    }
+
+    public function getCoursesIdWithoutSubscriptions()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "SELECT courses.id_course
+                FROM courses
+                LEFT JOIN (
+                    SELECT id_course
+                    FROM subscriptions
+                  ) AS courses_with_subscriptions
+                ON courses.id_course = courses_with_subscriptions.id_course
+                WHERE courses_with_subscriptions.id_course IS NULL";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        AddmatModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesIds = $stmt->fetchAll(PDO::FETCH_NUM);
+        return $coursesIds;
+    }
+
+    public function getCoursesListWithAdditionalInfo()
+    {
+        $link = PDOConnection::getInstance()->getConnection();
+        $sql = "(SELECT *
+                FROM courses
+                WHERE additional_info = 'Has maximum subscriptions amount')
+                    UNION
+                (
+                    SELECT *
+                    FROM courses
+                    WHERE additional_info = 'Has any subscriptions yet'
+                )";
+        $stmt = $link->prepare($sql);
+        $stmt->execute();
+        CourseModel::checkErrorArrayEmptiness($stmt->errorInfo());
+        $coursesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $coursesList;
     }
 }

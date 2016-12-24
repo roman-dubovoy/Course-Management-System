@@ -106,9 +106,10 @@ class TestService{
         } else {
             $this->testModel->addResult($tmp);
         }
-        if ($totalMark / $data['mark'] >= 0.6) {
-            return 1;
+        $mark_in_percents = round($totalMark / $data['mark'] * 100, 2);
+        if ($totalMark / $data['mark'] >= 0.75) {
+            return ['result' => "Success! Your mark is $totalMark from {$data['mark']}({$mark_in_percents}% from 100%)."];
         }
-        return 0;
+        return ['result' => "Fail! Your mark is $totalMark from {$data['mark']}({$mark_in_percents}% from 100%)."];
     }
 }

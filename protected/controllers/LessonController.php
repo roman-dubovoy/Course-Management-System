@@ -11,7 +11,7 @@ class LessonController{
         $data = json_decode(file_get_contents("php://input"), true);
         if (!empty($data)) {
             foreach ($data as $key => $value) {
-                if ($key == 'test'){
+                if ($key == 'test' or $key == 'add_mat'){
                     continue;
                 }
                 if (empty($value)) {

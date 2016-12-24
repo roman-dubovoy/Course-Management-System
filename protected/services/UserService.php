@@ -24,8 +24,7 @@ class UserService{
         }
         $this->userModel->addUser($data);
             mail($data['email'], "Course Management System",
-                "Congratulations, " . $data['name'] . "! You've been successfully registered in Course Management System.
-                 Have a nice day :)");
+                "Congratulations, " . $data['name'] . "!\nYou've been successfully registered in Course Management System.\nWith best regards, CMS Team.");
     }
 
     public function authUser(array $data){
@@ -61,6 +60,33 @@ class UserService{
             throw new EntityNotFoundException("User with id: {$data['id_u']} was not found.");
     }
 
+    public function getSubscribedUsersListByPeriod(array $data){
+        $subscribedUsersList = $this->userModel->getSubscribedUsersListByPeriod($data);
+        if (!empty($subscribedUsersList)){
+            return $subscribedUsersList;
+        }
+        else
+            throw new EntityNotFoundException("Users subscribed in specified period were not found.");
+    }
+    
+    public function getBestStudentsList(){
+        $bestStudentsList = $this->userModel->getBestStudentsList();
+        if (!empty($bestStudentsList)){
+            return $bestStudentsList;
+        }
+        else
+            throw new EntityNotFoundException("Best students list was not found");
+    }
+
+    public function getUsersListByNameFilter($name_filter){
+        $usersList = $this->userModel->getUsersListByNameFilter($name_filter);
+        if (!empty($usersList)){
+            return $usersList;
+        }
+        else
+            throw new EntityNotFoundException("No users with name starting with $name_filter...");
+    }
+
     public function deleteUser($id_user)
     {
         if ($this->userModel->getUserById($id_user)) {
@@ -68,5 +94,71 @@ class UserService{
         } else {
             throw new EntityNotFoundException("User with id: " . $id_user . "does not exists.");
         }
+    }
+
+    public function getOldestUsersListByRoles(){
+        $usersList = $this->userModel->getOldestUsersListByRoles();
+        if (!empty($usersList)){
+            return $usersList;
+        }
+        else
+            throw new EntityNotFoundException("Users were not found.");
+    }
+
+    public function getUsersAmountSubscribedForLastMonth()
+    {
+        $usersAmount = $this->userModel->getUsersAmountSubscribedForLastMonth();
+        if ($usersAmount >= 0)
+            return $usersAmount;
+    }
+
+    public function getUsersAndPassedTestsAmountList()
+    {
+        $usersList = $this->userModel->getUsersAndPassedTestsAmountList();
+        if (!empty($usersList)){
+            return $usersList;
+        }
+        else
+            throw new EntityNotFoundException("No users with passed tests.");
+    }
+
+    public function getUsersAndSubscriptionsAmountList()
+    {
+        $usersList = $this->userModel->getUsersAndSubscriptionsAmountList();
+        if (!empty($usersList)){
+            return $usersList;
+        }
+        else
+            throw new EntityNotFoundException("No users subscribed on any course.");
+    }
+    
+    public function getTeachersWithMaxCoursesAmount()
+    {
+        $teachers = $this->userModel->getTeachersWithMaxCoursesAmount();
+        if (!empty($teachers)){
+            return $teachers;
+        }
+        else
+            throw new EntityNotFoundException("No teachers found.");
+    }
+    
+    public function getStudentsWithNonePassedTests()
+    {
+        $studentsList = $this->userModel->getStudentsWithNonePassedTests();
+        if (!empty($studentsList)){
+            return $studentsList;
+        }
+        else
+            throw new EntityNotFoundException("No students found.");
+    }
+
+    public function getTeachersWithNoneCreatedCourses()
+    {
+        $teachersList = $this->userModel->getTeachersWithNoneCreatedCoursesByWeek();
+        if (!empty($teachersList)){
+            return $teachersList;
+        }
+        else
+            throw new EntityNotFoundException("No teachers found.");
     }
 }

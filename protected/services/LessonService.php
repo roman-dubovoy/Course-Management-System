@@ -5,21 +5,23 @@ class LessonService{
     private $lectureModel;
     private $courseModel;
     private $testService;
+    private $addmatService;
 
     protected function __construct(LessonModel $lessonModel, LectureModel $lectureModel,
-                                   TestService $testService, CourseModel $courseModel)
+                                   TestService $testService, CourseModel $courseModel, AddmatService $addmatService)
     {
         $this->lessonModel = $lessonModel;
         $this->lectureModel = $lectureModel;
         $this->courseModel = $courseModel;
         $this->testService = $testService;
+        $this->addmatService = $addmatService;
     }
     
     public static function getInstance()
     {
         if (is_null(self::$instance)) {
             self::$instance = new self(LessonModel::getInstance(), LectureModel::getInstance(),
-                TestService::getInstance(), CourseModel::getInstance());
+                TestService::getInstance(), CourseModel::getInstance(), AddmatService::getInstance());
         }
         return self::$instance;
     }
@@ -43,6 +45,12 @@ class LessonService{
             if (!empty($data['test'])) {
                 $data['test']['id_lesson'] = $id_lesson;
                 $this->testService->addTest($data['test']);
+            }
+            if (!empty($data['add_mat'])){
+                foreach ($data['add_mat'] as $add_mat_item){
+                    $add_mat_item['id_lesson'] = $id_lesson;
+                    $this->addmatService->addAdditionalMaterials($add_mat_item);
+                }
             }
         }
     }

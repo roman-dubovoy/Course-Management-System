@@ -60,7 +60,8 @@ class TestModel extends Model{
 
     public function deleteTest($id_test){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "DELETE FROM tests WHERE id_test = ?";
+        $sql = "DELETE FROM tests
+                WHERE id_test = ?";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(1, $id_test, PDO::PARAM_INT);
         $stmt->execute();

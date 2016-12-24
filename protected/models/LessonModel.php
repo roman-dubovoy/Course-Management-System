@@ -16,7 +16,8 @@ class LessonModel extends Model{
 
     public function addLesson(array $data){
         $link = PDOConnection::getInstance()->getConnection();
-        $sql = "INSERT INTO lessons(title, date, id_course) VALUES (:title, :date, :id_course)";
+        $sql = "INSERT INTO lessons(title, date, id_course)
+                VALUES (:title, :date, :id_course)";
         $stmt = $link->prepare($sql);
         $stmt->execute($data);
         LessonModel::checkErrorArrayEmptiness($stmt->errorInfo());
